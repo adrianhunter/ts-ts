@@ -1,0 +1,18 @@
+import "../util/contract.scrypt";
+
+contract AdvancedCounter {
+	public function increment(SigHashPreimage txPreimage ,int amount ,Ripemd160 changePKH ,int changeSats ) {
+		SigHashType sigHashType = SigHash.ANYONECANPAY | SigHash.ALL | SigHash.FORKID;
+				require(Util.checkPreimageSigHashType(txPreimage, sigHashType));
+		bytes scriptCode = Util.scriptCode(txPreimage);
+		int scriptLen = len(scriptCode);
+		int counter = unpack(scriptCode[scriptLen - Util.DataLen:  0]);
+		bytes scriptCode_ = scriptCode[0:  scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
+		bytes counterOutput = Util.buildOutput(scriptCode_, amount);
+		bytes changeScript = Util.buildPublicKeyHashScript(changePKH);
+		bytes changeOutput = Util.buildOutput(changeScript, changeSats);
+		Sha256 hashOutputs = hash256(counterOutput + changeOutput);
+				require(hashOutputs == Util.hashOutputs(txPreimage));
+
+	}
+}

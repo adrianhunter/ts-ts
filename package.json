@@ -1,0 +1,46 @@
+{
+	"name": "@hyperg/ts-ts",
+	"version": "0.0.1",
+	"main": "dist/index.js",
+	"private": true,
+	"scripts": {
+		"startx": "node dist/test/programs/storage/program.js",
+		"start": "nodemon",
+		"build": "rm -rf ./dist && ttsc",
+		"dev": "nodemon",
+		"testx": "mocha --require @swc-node/register --watch-extensions ts 'test/compile.test.ts'",
+		"test": "yarn build && mocha --require @swc-node/register --watch-extensions ts 'test/compile.test.ts'",
+		"test:watch": "nodemon",
+		"overwrite": "node --require @swc-node/register test/make-results-expected.ts",
+		"compile": "node --require @swc-node/register compile.ts"
+	},
+	"dependencies": {
+		"@phenomnomnominal/tsquery": "^4.1.1",
+		"@types/node": "^14.11.8",
+		"chai": "^4.2.0",
+		"glob": "^7.1.6",
+		"reflect-metadata": "^0.1.13",
+		"scryptlib": "^0.2.11",
+		"typescript": "^4.0.2"
+	},
+	"devDependencies": {
+		"@swc-node/register": "^1.0.0",
+		"@types/chai": "^4.2.12",
+		"@types/mocha": "^8.0.3",
+		"mocha": "^8.1.1",
+		"nodemon": "^2.0.4",
+		"ts-node": "^9.0.0",
+		"tslib": "^2.0.3",
+		"ttypescript": "^1.5.12"
+	},
+	"nodemonConfig": {
+		"ignore": [
+			"./dist"
+		],
+		"watch": [
+			"./**/*.ts"
+		],
+		"exec": "yarn test",
+		"ext": "ts"
+	}
+}

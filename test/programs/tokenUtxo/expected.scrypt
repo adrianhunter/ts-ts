@@ -1,0 +1,72 @@
+import "../util/contract.scrypt";
+
+contract Token {
+	public function split(Sig senderSig ,PubKey receiver0 ,int tokenAmount0 ,int satoshiAmount0 ,PubKey receiver1 ,int tokenAmount1 ,int satoshiAmount1 ,SigHashPreimage txPreimage ) {
+				require(tokenAmount0 > 0);
+				require(tokenAmount1 >= 0);
+				require(Tx.checkPreimage(txPreimage));
+		bytes lockingScript = Util.scriptCode(txPreimage);
+		int scriptLen = len(lockingScript);
+		int amountStart = scriptLen - Util.DataLen * 2;
+		PubKey sender = PubKey(
+			lockingScript[amountStart - Util.PubKeyLen:  amountStart]
+		);
+				require(checkSig(senderSig, sender));
+		int balance0 = unpack(
+			lockingScript[amountStart:  amountStart + Util.DataLen]
+		);
+		int balance1 = unpack(
+			lockingScript[amountStart + Util.DataLen:  len(lockingScript)]
+		);
+				require(balance0 + balance1 == tokenAmount0 + tokenAmount1);
+		bytes codePart = lockingScript[0:  amountStart - Util.PubKeyLen];
+		bytes outputScript0 = codePart + receiver0 + num2bin(0, Util.DataLen) + num2bin(tokenAmount0, Util.DataLen);
+		bytes output0 = Util.buildOutput(outputScript0, satoshiAmount0);
+		bytes outputScript1 = codePart + receiver1 + num2bin(0, Util.DataLen) + num2bin(tokenAmount1, Util.DataLen);
+		bytes output1 = tokenAmount1 > 0 ? Util.buildOutput(outputScript1, satoshiAmount1) : b'';
+		Sha256 hashOutputs = hash256(output0 + output1);
+				require(hashOutputs == Util.hashOutputs(txPreimage));
+
+	}
+	public function merge(Sig senderSig ,PubKey receiver ,bytes prevouts ,int otherTokenAmount ,int satoshiAmount ,SigHashPreimage txPreimage ) {
+				require(otherTokenAmount >= 0);
+				require(Tx.checkPreimage(txPreimage));
+				require(hash256(prevouts) == Util.hashPrevouts(txPreimage));
+		int outpointLen = 36;
+				require(len(prevouts) == 2 * outpointLen);
+		bytes lockingScript = Util.scriptCode(txPreimage);
+		int scriptLen = len(lockingScript);
+		int amountStart = scriptLen - Util.DataLen * 2;
+		PubKey sender = PubKey(
+			lockingScript[amountStart - Util.PubKeyLen:  amountStart]
+		);
+				require(checkSig(senderSig, sender));
+		int balance0 = unpack(
+			lockingScript[amountStart:  amountStart + Util.DataLen]
+		);
+		int balance1 = unpack(
+			lockingScript[amountStart + Util.DataLen:  len(lockingScript)]
+		);
+		bytes codePart = lockingScript[0:  amountStart - Util.PubKeyLen];
+		bytes amountPart = Util.outpoint(txPreimage) == prevouts[0:  outpointLen] ? num2bin(balance0 + balance1, Util.DataLen) + num2bin(otherTokenAmount, Util.DataLen) : num2bin(otherTokenAmount, Util.DataLen) + num2bin(balance0 + balance1, Util.DataLen);
+		bytes outputScript = codePart + receiver + amountPart;
+		bytes output = Util.buildOutput(outputScript, satoshiAmount);
+				require(hash256(output) == Util.hashOutputs(txPreimage));
+
+	}
+	public function burn(Sig senderSig ,Ripemd160 receiverPkh ,int satoshiAmount ,SigHashPreimage txPreimage ) {
+				require(Tx.checkPreimage(txPreimage));
+		bytes lockingScript = Util.scriptCode(txPreimage);
+		int scriptLen = len(lockingScript);
+		int amountStart = scriptLen - Util.DataLen * 2;
+		PubKey sender = PubKey(
+			lockingScript[amountStart - Util.PubKeyLen:  amountStart]
+		);
+				require(checkSig(senderSig, sender));
+		bytes lockingScript_ = Util.buildPublicKeyHashScript(receiverPkh);
+		bytes output = Util.buildOutput(lockingScript_, satoshiAmount);
+		Sha256 hashOutputs = hash256(output);
+				require(hashOutputs == Util.hashOutputs(txPreimage));
+
+	}
+}

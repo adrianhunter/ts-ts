@@ -1,0 +1,20 @@
+import "../util/contract.scrypt";
+
+contract TokenSale {
+	int price;
+	constructor(int price )  {
+				this.price = price;
+
+	}
+	public function buy(PubKey buyer ,int numTokens ,SigHashPreimage txPreimage ) {
+				require(Tx.checkPreimage(txPreimage));
+		bytes lockingScript = Util.scriptCode(txPreimage);
+		int scriptLen = len(lockingScript);
+		int oldBalance = Util.value(txPreimage);
+		int newBalance = oldBalance + numTokens * this.price;
+		bytes lockingScript_ = lockingScript + buyer + num2bin(numTokens, Util.DataLen);
+		bytes output = Util.buildOutput(lockingScript_, newBalance);
+				require(hash256(output) == Util.hashOutputs(txPreimage));
+
+	}
+}

@@ -1,0 +1,63 @@
+{
+	"compilerOptions": {
+		"target": "es2019",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"noImplicitAny": false,
+		// "downlevelIteration": false,
+		// "noUnusedLocals": true,
+		// "noFallthroughCasesInSwitch": false,
+		// "noImplicitReturns": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"baseUrl": "./",
+		// "strictNullChecks": true,
+		// "outDir": "build",
+		// "paths": {
+		// 	"@hyperg/schema": [
+		// 		"packages/schema"
+		// 	],
+		// 	"@demo/*": [
+		// 		"packages/demo/*"
+		// 	],
+		// 	"@hyperg/*": [
+		// 		"packages/*"
+		// 	],
+		// },
+		"lib": [
+			"ESNext",
+			"DOM",
+		],
+		// "moduleResolution": "node",
+		"experimentalDecorators": true,
+		// "esModuleInterop": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"noEmitOnError": false,
+		"declarationMap": true,
+		"composite": true,
+		"outDir": "./dist",
+		"strict": true,
+		"plugins": [
+			{
+				"transform": "./ts-ts-compiler.ts",
+				"include": "./test/programs/**/*.ts"
+			},
+		],
+		"paths": {
+			"util-scrypt": [
+				"./util-scrypt.ts"
+			],
+			"util.scrypt": [
+				"./util-scrypt.ts"
+			] // This mapping is relative to "baseUrl"
+		},
+		// "types": [
+		// 	"./types.d.ts"
+		// ]
+	},
+	"exclude": [
+		"./dist"
+	]
+}

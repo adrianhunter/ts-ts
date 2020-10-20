@@ -1,0 +1,12 @@
+
+
+contract HashPuzzleP2PKH {
+	Ripemd160 pubKeyHash;
+	Sha256 hash;
+	public function verify(bytes data ,Sig sig ,PubKey pubKey ) {
+		HashPuzzleSha256 hashPuzzle = new HashPuzzleSha256(this.hash);
+		P2PKH p2pk = new P2PKH(this.pubKeyHash);
+				require(hashPuzzle.spend(data) && p2pk.spend(sig, pubKey));
+
+	}
+}

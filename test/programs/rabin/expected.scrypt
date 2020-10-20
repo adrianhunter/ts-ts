@@ -1,0 +1,15 @@
+import "../util/contract.scrypt";
+
+contract RabinSignature {
+	public function verifySig(int sig ,bytes msg ,bytes padding ,int n ) {
+		int h = Util.fromLEUnsigned(this.hash(msg + padding));
+				require((sig * sig) % n == h % n);
+
+	}
+	function hash(bytes x ): bytes {
+		bytes hx = sha256(x);
+		int idx = len(hx) / 2;
+		return  sha256(hx[0:  idx]) + sha256(hx[idx:  len(hx)]);
+
+	}
+}

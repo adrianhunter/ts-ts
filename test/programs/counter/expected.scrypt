@@ -1,0 +1,14 @@
+import "../util/contract.scrypt";
+
+contract Counter {
+	public function increment(SigHashPreimage txPreimage ,int amount ) {
+				require(Tx.checkPreimage(txPreimage));
+		bytes scriptCode = Util.scriptCode(txPreimage);
+		int scriptLen = len(scriptCode);
+		int counter = unpack(scriptCode[scriptLen - Util.DataLen:  0]);
+		bytes scriptCode_ = scriptCode[0:  scriptLen - Util.DataLen] + num2bin(counter + 1, Util.DataLen);
+		bytes output = Util.buildOutput(scriptCode_, amount);
+				require(hash256(output) == Util.hashOutputs(txPreimage));
+
+	}
+}

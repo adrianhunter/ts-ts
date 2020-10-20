@@ -1,0 +1,29 @@
+import "util.scrypt.scrypt";
+import "../serializer/contract.scrypt";
+
+contract StateSerializer {
+	public function mutate(SigHashPreimage txPreimage ,int amount ) {
+				require(Tx.checkPreimage(txPreimage));
+		bytes scriptCode = Util.scriptCode(txPreimage);
+		int scriptLen = len(scriptCode);
+		bytes lb = scriptCode[scriptLen - Util.StateLen:  len(scriptCode)];
+		Reader lr = new Reader(lb);
+		int stateLen = lr.readInt();
+				require(stateLen == 7);
+		int stateStart = scriptLen - stateLen - Util.StateLen;
+		bytes state = scriptCode[stateStart:  len(scriptCode)];
+		Reader r = new Reader(state);
+		auto counter = r.readInt();
+				require(counter == 11);
+		auto b = r.readBytes();
+				require(b == b'1234');
+		bool flag = r.readBool();
+				require(flag);
+		bytes stateBuf = Writer.writeInt(counter + 1) + Writer.writeBytes(b + b'ff') + Writer.writeBool(!flag);
+		bytes lenBuf = Writer.writeBytes(Util.encodeStateSize(stateBuf));
+		bytes scriptCode_ = scriptCode[0:  stateStart] + stateBuf + lenBuf;
+		bytes output = Util.buildOutput(scriptCode_, amount);
+				require(hash256(output) == Util.hashOutputs(txPreimage));
+
+	}
+}

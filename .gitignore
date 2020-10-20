@@ -1,0 +1,12 @@
+deployments/
+
+test/**/stdin_desc.json
+test/programs/**/contract.scrypt
+
+test/**/contract_desc.json
+test/**/*.json
+
+dist
+.vscode
+
+node_modules

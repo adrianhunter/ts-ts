@@ -1,0 +1,47 @@
+import "../util/contract.scrypt";
+
+contract SPVToken {
+	public function transfer(Sig senderSig ,PubKey receiver ,int satoshiAmount ,SigHashPreimage txPreimage ,bytes prevTx ,bytes prevPrevTx ) {
+		int TxIdLen = 32;
+		int TokenIdLen = TxIdLen;
+		int PrevTxIdIdx = 5;
+		int UnlockingScriptIdx = 41;
+		bytes NullTokenId = num2bin(0, TokenIdLen);
+				require(Tx.checkPreimage(txPreimage));
+		bytes lockingScript = Util.scriptCode(txPreimage);
+		int scriptLen = len(lockingScript);
+		int constStart = scriptLen - TokenIdLen - Util.PubKeyLen;
+		bytes constPart = lockingScript[0:  constStart];
+		PubKey sender = PubKey(
+			lockingScript[constStart + TokenIdLen:  len(lockingScript)]
+		);
+				require(checkSig(senderSig, sender));
+		bytes outpoint = Util.outpoint(txPreimage);
+		bytes prevTxId = outpoint[0:  TokenIdLen];
+				require(hash256(prevTx) == prevTxId);
+		bytes tokenId = lockingScript[constStart:  constStart + TokenIdLen];
+		if (tokenId == NullTokenId)  {
+				tokenId = prevTxId;
+
+	} else  {
+		bytes prevPrevTxId = prevTx[PrevTxIdIdx:  PrevTxIdIdx + TxIdLen];
+				require(hash256(prevPrevTx) == prevPrevTxId);
+		int unlockingScriptLen = Util.readVarintLen(
+				prevPrevTx[UnlockingScriptIdx:  len(prevPrevTx)]
+			);
+		int lockingScriptIdx = UnlockingScriptIdx + unlockingScriptLen + Util.InputSeqLen + 1 + Util.OutputValueLen;
+		bytes prevLockingScript = Util.readVarint(
+				prevPrevTx[lockingScriptIdx:  len(prevPrevTx)]
+			);
+				require(len(prevLockingScript) == len(lockingScript));
+				require(prevLockingScript[0:  constStart] == constPart);
+		bytes prevTokenId = prevLockingScript[constStart:  constStart + TokenIdLen];
+				require(prevTokenId == tokenId || prevTokenId == NullTokenId);
+
+	}
+		bytes outputScript = constPart + tokenId + receiver;
+		bytes output = Util.buildOutput(outputScript, satoshiAmount);
+				require(hash256(output) == Util.hashOutputs(txPreimage));
+
+	}
+}
